@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blush-pink: #f4b6c2;
+  --color-soft-peach: #f8d7c4;
+  --color-warm-cream: #fff7f0;
+  --color-dark-charcoal: #222222;
+
+  --font-display: "Fredoka", "Quicksand", sans-serif;
+  --font-heading: "Quicksand", "Fredoka", sans-serif;
+  --font-body: "Poppins", system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-warm-cream);
+  color: var(--color-dark-charcoal);
+  font-family: var(--font-body);
+}

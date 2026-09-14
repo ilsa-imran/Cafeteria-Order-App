@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment / secrets (never commit real values — .env.example stays tracked)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Databases
+*.db
+*.db-journal
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+dev.log
+dev.err.log
+
+# Claude Code local tooling config (includes launch.json — untrack this if
+# you want that file's dev-server setup shared/versioned with the project).
+# Root-anchored (leading slash) so it does NOT also match
+# .claudeFiles/.claude/, which holds the project's architecture/spec docs
+# and must stay tracked.
+/.claude
+
+# Process/runtime artifacts
+.backend-dev-pid
+
+# Test/tooling scratch output
+.playwright-mcp/
+coverage/
+
+# Backup copies made while editing the submission document
+*.backup-*.docx
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
