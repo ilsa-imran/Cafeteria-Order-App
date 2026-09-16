@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { FOOD_IMAGES } from "../lib/foodImages";
 
 interface FoodIllustrationProps {
@@ -75,7 +76,7 @@ function GenericIcon() {
   );
 }
 
-const ICONS: Record<string, () => JSX.Element> = {
+const ICONS: Record<string, () => ReactElement> = {
   "chicken biryani": BiryaniIcon,
   "beef burger": BurgerIcon,
   "club sandwich": SandwichIcon,

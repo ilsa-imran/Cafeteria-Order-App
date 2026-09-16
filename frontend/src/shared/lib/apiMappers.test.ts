@@ -49,6 +49,7 @@ describe("mapOrder", () => {
       orderNumber: "ORD-123456",
       status: "READY",
       pickupTime: "WITHIN_30_MIN",
+      pickupTimeMinutes: null,
       total: 500,
       items: [
         {
@@ -77,6 +78,7 @@ describe("mapOrder", () => {
       orderNumber: "ORD-123456",
       status: "SOMETHING_NEW",
       pickupTime: "IMMEDIATELY",
+      pickupTimeMinutes: null,
       total: 0,
       items: [],
     });
