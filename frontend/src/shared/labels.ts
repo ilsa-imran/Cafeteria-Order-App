@@ -1,4 +1,4 @@
-import type { Order, OrderStatus, PickupTime } from "./types/order";
+import type { Order, OrderStatus, PaymentMethod, PickupTime } from "./types/order";
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   confirmed: "Confirmed",
@@ -13,6 +13,11 @@ export const PICKUP_TIME_LABELS: Record<PickupTime, string> = {
   within_30_min: "Within 30 min",
   within_1_hour: "Within 1 hour",
   custom: "Custom",
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: "Cash",
+  wallet: "Wallet",
 };
 
 export const MAX_CUSTOM_PICKUP_MINUTES = 180;

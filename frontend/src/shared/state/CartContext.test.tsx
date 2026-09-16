@@ -92,6 +92,7 @@ describe("CartContext", () => {
     act(() => result.current.addItem(BIRYANI));
     act(() => result.current.setPickupTime("custom"));
     act(() => result.current.setCustomPickupMinutes(90));
+    act(() => result.current.setPaymentMethod("cash"));
 
     await act(async () => {
       await result.current.confirmOrder();
@@ -100,7 +101,7 @@ describe("CartContext", () => {
     expect(apiFetch).toHaveBeenCalledWith(
       "/orders",
       expect.objectContaining({
-        body: expect.objectContaining({ pickupTime: "CUSTOM", pickupTimeMinutes: 90 }),
+        body: expect.objectContaining({ pickupTime: "CUSTOM", pickupTimeMinutes: 90, paymentMethod: "CASH" }),
       }),
     );
   });
@@ -119,6 +120,7 @@ describe("CartContext", () => {
 
     act(() => result.current.addItem(BIRYANI));
     act(() => result.current.setPickupTime("immediately"));
+    act(() => result.current.setPaymentMethod("wallet"));
 
     await act(async () => {
       await result.current.confirmOrder();
@@ -127,6 +129,7 @@ describe("CartContext", () => {
     await waitFor(() => {
       expect(result.current.lines).toHaveLength(0);
       expect(result.current.pickupTime).toBeNull();
+      expect(result.current.paymentMethod).toBeNull();
       expect(result.current.lastOrder?.orderNumber).toBe("ORD-123456");
     });
   });

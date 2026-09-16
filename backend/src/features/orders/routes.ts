@@ -16,8 +16,8 @@ export const ordersRouter = Router();
 
 ordersRouter.post("/", requireAuth, requireRole("STUDENT"), async (req, res, next) => {
   try {
-    const { items, pickupTime, pickupTimeMinutes } = createOrderSchema.parse(req.body);
-    const order = await createOrder(req.user!.id, items, pickupTime, pickupTimeMinutes);
+    const { items, pickupTime, pickupTimeMinutes, paymentMethod } = createOrderSchema.parse(req.body);
+    const order = await createOrder(req.user!.id, items, pickupTime, paymentMethod, pickupTimeMinutes);
     res.status(201).json(order);
   } catch (err) {
     next(err);

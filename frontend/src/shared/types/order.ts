@@ -1,5 +1,7 @@
 export type PickupTime = "immediately" | "within_30_min" | "within_1_hour" | "custom";
 
+export type PaymentMethod = "cash" | "wallet";
+
 export type OrderStatus = "confirmed" | "preparing" | "ready" | "picked_up" | "cancelled";
 
 export type Role = "STUDENT" | "STAFF" | "ADMIN";
@@ -30,6 +32,7 @@ export interface Order {
   items: OrderLineItem[];
   pickupTime: PickupTime;
   pickupTimeMinutes?: number;
+  paymentMethod: PaymentMethod;
   status: OrderStatus;
   total: number;
 }

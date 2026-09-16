@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 import QRCode from "qrcode";
 import { Prisma } from "@prisma/client";
-import type { OrderStatus, PickupTime } from "@prisma/client";
+import type { OrderStatus, PaymentMethod, PickupTime } from "@prisma/client";
 import { AppError } from "../../shared/lib/AppError.js";
 import { prisma } from "../../shared/lib/prisma.js";
 
@@ -31,6 +31,7 @@ export async function createOrder(
   userId: string,
   items: { menuItemId: string; quantity: number }[],
   pickupTime: PickupTime,
+  paymentMethod: PaymentMethod,
   pickupTimeMinutes?: number,
 ) {
   const menuItems = await prisma.menuItem.findMany({
@@ -66,6 +67,7 @@ export async function createOrder(
           userId,
           pickupTime,
           pickupTimeMinutes: pickupTime === "CUSTOM" ? pickupTimeMinutes : undefined,
+          paymentMethod,
           total,
           items: { create: orderItems },
         },

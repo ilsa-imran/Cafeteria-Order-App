@@ -92,11 +92,26 @@ The assignment also specifies the fonts Vanity, Arschane Regular, and Fredoka.
 
 Only authorized cafeteria staff or administrators shall be able to add, modify, or remove menu items, prices, and availability.
 
+## Payment method (Implementation Decision, not one of the five FRs)
+
+> The case description states "Payment can be cash or wallet," but this
+> was originally treated as scope-out background context rather than a
+> requirement to build, since it isn't one of the five FRs the assignment
+> explicitly asks for. At the student's explicit request, this was
+> implemented anyway to match the case narrative: students choose Cash or
+> Wallet on the pickup-time screen before confirming an order, the choice
+> is stored on the order (`Order.paymentMethod`, defaulting to `CASH` for
+> pre-existing orders), and it's surfaced back to staff on Order
+> Confirmation, Order History, and Pickup Verification — the latter shows
+> "(collect at pickup)" next to Cash orders so staff know which ones still
+> need physical payment collected. No actual payment processing/gateway
+> integration was added — it's a recorded preference only, consistent with
+> the "Online payment processing" scope-out below.
+
 ## Scope control
 
 Do not treat the following as mandatory unless separately approved:
-- Online payment processing
-- Wallet integration
+- Online payment processing (gateway integration, real money movement)
 - Push notifications
 - Delivery
 - Loyalty programs
@@ -106,4 +121,7 @@ Do not treat the following as mandatory unless separately approved:
 - Microservices
 - Kubernetes
 
-These may be considered optional extensions because the case mentions cash/wallet payment, but the five listed FRs and three NFRs define the core assignment requirements provided.
+These remain optional extensions beyond the five listed FRs and three NFRs
+that define the core assignment requirements. Cash/wallet *selection* (not
+payment processing) was implemented per the case description — see
+"Payment method" above.

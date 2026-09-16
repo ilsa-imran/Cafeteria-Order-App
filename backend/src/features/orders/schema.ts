@@ -14,6 +14,7 @@ export const createOrderSchema = z
       .min(1),
     pickupTime: z.enum(["IMMEDIATELY", "WITHIN_30_MIN", "WITHIN_1_HOUR", "CUSTOM"]),
     pickupTimeMinutes: z.number().int().positive().max(MAX_CUSTOM_PICKUP_MINUTES).optional(),
+    paymentMethod: z.enum(["CASH", "WALLET"]).default("CASH"),
   })
   .refine(
     (data) => data.pickupTime !== "CUSTOM" || data.pickupTimeMinutes !== undefined,

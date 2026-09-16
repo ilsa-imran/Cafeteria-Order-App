@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { PageShell } from "../../shared/components/PageShell";
 import { apiFetch } from "../../shared/lib/api";
-import { formatPickupTime } from "../../shared/labels";
+import { formatPickupTime, PAYMENT_METHOD_LABELS } from "../../shared/labels";
 import { useAuth } from "../../shared/state/AuthContext";
 import { useCart } from "../../shared/state/CartContext";
 
@@ -109,6 +109,11 @@ export function OrderConfirmationPage() {
           <div className="mt-4 flex justify-between border-t border-dashed border-[var(--color-dark-charcoal)]/15 pt-3 text-sm">
             <span className="text-[var(--color-dark-charcoal)]/60">Pickup</span>
             <span className="font-medium">{formatPickupTime(lastOrder)}</span>
+          </div>
+
+          <div className="mt-1 flex justify-between text-sm">
+            <span className="text-[var(--color-dark-charcoal)]/60">Payment</span>
+            <span className="font-medium">{PAYMENT_METHOD_LABELS[lastOrder.paymentMethod]}</span>
           </div>
 
           <div className="mt-1 flex justify-between text-sm">

@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "../../shared/components/PageShell";
-import { MAX_CUSTOM_PICKUP_MINUTES } from "../../shared/labels";
+import { MAX_CUSTOM_PICKUP_MINUTES, PAYMENT_METHOD_LABELS } from "../../shared/labels";
 import { useCart } from "../../shared/state/CartContext";
-import type { PickupTime } from "../../shared/types/order";
+import type { PaymentMethod, PickupTime } from "../../shared/types/order";
 
 const OPTIONS: { value: PickupTime; label: string }[] = [
   { value: "immediately", label: "Immediately" },
@@ -13,9 +13,19 @@ const OPTIONS: { value: PickupTime; label: string }[] = [
   { value: "custom", label: "Write my own time" },
 ];
 
+const PAYMENT_OPTIONS: PaymentMethod[] = ["cash", "wallet"];
+
 export function PickupTimePage() {
-  const { pickupTime, setPickupTime, customPickupMinutes, setCustomPickupMinutes, confirmOrder, lines } =
-    useCart();
+  const {
+    pickupTime,
+    setPickupTime,
+    customPickupMinutes,
+    setCustomPickupMinutes,
+    paymentMethod,
+    setPaymentMethod,
+    confirmOrder,
+    lines,
+  } = useCart();
   const [isConfirming, setIsConfirming] = useState(false);
   const navigate = useNavigate();
 
@@ -25,7 +35,8 @@ export function PickupTimePage() {
       customPickupMinutes > 0 &&
       customPickupMinutes <= MAX_CUSTOM_PICKUP_MINUTES);
 
-  const confirmDisabled = !pickupTime || !customMinutesValid || lines.length === 0 || isConfirming;
+  const confirmDisabled =
+    !pickupTime || !customMinutesValid || !paymentMethod || lines.length === 0 || isConfirming;
 
   const handleConfirm = async () => {
     setIsConfirming(true);
@@ -106,6 +117,35 @@ export function PickupTimePage() {
             )}
           </motion.div>
         )}
+      </div>
+
+      <p className="font-heading mt-6 mb-3 text-sm font-bold text-[var(--color-dark-charcoal)]/80">
+        Payment Method
+      </p>
+      <div className="flex gap-3">
+        {PAYMENT_OPTIONS.map((method) => {
+          const isActive = paymentMethod === method;
+          return (
+            <motion.button
+              key={method}
+              type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setPaymentMethod(method)}
+              className={`relative flex-1 overflow-hidden rounded-[20px] bg-white p-4 text-center font-medium shadow-[0_4px_12px_rgba(34,34,34,0.05)] ${
+                isActive ? "text-[var(--color-warm-cream)]" : ""
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="payment-highlight"
+                  className="absolute inset-0 bg-[var(--color-soft-peach)]"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+              <span className="relative z-10">{PAYMENT_METHOD_LABELS[method]}</span>
+            </motion.button>
+          );
+        })}
       </div>
 
       <motion.button

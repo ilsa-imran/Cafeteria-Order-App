@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { PageShell } from "../../shared/components/PageShell";
 import { apiFetch } from "../../shared/lib/api";
 import { mapOrder } from "../../shared/lib/apiMappers";
-import { formatPickupTime, ORDER_STATUS_LABELS } from "../../shared/labels";
+import { formatPickupTime, ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "../../shared/labels";
 import { useAuth } from "../../shared/state/AuthContext";
 import type { Order } from "../../shared/types/order";
 
@@ -75,7 +75,7 @@ export function OrderHistoryPage() {
                     .join(", ")}
                 </p>
                 <p className="font-body text-xs text-[var(--color-dark-charcoal)]/50">
-                  {formatPickupTime(order)}
+                  {formatPickupTime(order)} &middot; {PAYMENT_METHOD_LABELS[order.paymentMethod]}
                 </p>
               </div>
               <div className="text-right">

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PageShell } from "../../shared/components/PageShell";
 import { apiFetch } from "../../shared/lib/api";
 import { mapOrder } from "../../shared/lib/apiMappers";
-import { ORDER_STATUS_LABELS } from "../../shared/labels";
+import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "../../shared/labels";
 import { useAuth } from "../../shared/state/AuthContext";
 import type { Order } from "../../shared/types/order";
 
@@ -95,6 +95,12 @@ export function PickupVerificationPage() {
           </ul>
           <p className="mt-2 text-sm">
             Status: <span className="font-medium">{ORDER_STATUS_LABELS[foundOrder.status]}</span>
+          </p>
+          <p className="mt-1 text-sm">
+            Payment: <span className="font-medium">{PAYMENT_METHOD_LABELS[foundOrder.paymentMethod]}</span>
+            {foundOrder.paymentMethod === "cash" && foundOrder.status !== "picked_up" && (
+              <span className="ml-1 text-[var(--color-soft-peach)]">(collect at pickup)</span>
+            )}
           </p>
 
           {foundOrder.status === "ready" && (

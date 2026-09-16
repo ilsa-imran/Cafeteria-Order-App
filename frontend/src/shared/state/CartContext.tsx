@@ -1,8 +1,8 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { apiFetch } from "../lib/api";
-import { mapOrder, toBackendPickupTime } from "../lib/apiMappers";
-import type { MenuItem, Order, OrderLineItem, PickupTime } from "../types/order";
+import { mapOrder, toBackendPaymentMethod, toBackendPickupTime } from "../lib/apiMappers";
+import type { MenuItem, Order, OrderLineItem, PaymentMethod, PickupTime } from "../types/order";
 import { useAuth } from "./AuthContext";
 
 interface CartContextValue {
@@ -11,12 +11,14 @@ interface CartContextValue {
   itemCount: number;
   pickupTime: PickupTime | null;
   customPickupMinutes: number | null;
+  paymentMethod: PaymentMethod | null;
   lastOrder: Order | null;
   addItem: (menuItem: MenuItem) => void;
   setQuantity: (menuItemId: string, quantity: number) => void;
   removeItem: (menuItemId: string) => void;
   setPickupTime: (pickupTime: PickupTime) => void;
   setCustomPickupMinutes: (minutes: number | null) => void;
+  setPaymentMethod: (paymentMethod: PaymentMethod) => void;
   confirmOrder: () => Promise<Order>;
 }
 
@@ -27,6 +29,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<OrderLineItem[]>([]);
   const [pickupTime, setPickupTimeState] = useState<PickupTime | null>(null);
   const [customPickupMinutes, setCustomPickupMinutes] = useState<number | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
 
   const setPickupTime = (next: PickupTime) => {
@@ -82,6 +85,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (pickupTime === "custom" && !customPickupMinutes) {
       throw new Error("Cannot confirm a custom pickup time without a number of minutes");
     }
+    if (!paymentMethod) {
+      throw new Error("Cannot confirm an order without a payment method");
+    }
 
     const raw = await apiFetch<unknown>("/orders", {
       method: "POST",
@@ -93,6 +99,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         })),
         pickupTime: toBackendPickupTime(pickupTime),
         ...(pickupTime === "custom" ? { pickupTimeMinutes: customPickupMinutes } : {}),
+        paymentMethod: toBackendPaymentMethod(paymentMethod),
       },
     });
 
@@ -101,6 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLines([]);
     setPickupTimeState(null);
     setCustomPickupMinutes(null);
+    setPaymentMethod(null);
 
     return order;
   };
@@ -111,12 +119,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     itemCount,
     pickupTime,
     customPickupMinutes,
+    paymentMethod,
     lastOrder,
     addItem,
     setQuantity,
     removeItem,
     setPickupTime,
     setCustomPickupMinutes,
+    setPaymentMethod,
     confirmOrder,
   };
 
