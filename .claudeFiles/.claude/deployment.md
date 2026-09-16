@@ -77,6 +77,30 @@ zero cost:
     suite's default 5s timeout assumed a same-process SQLite file; a few
     tests (notably the 20-concurrent-orders test) need more time over a
     real network connection to Postgres.
+- **Frontend build fixes for Vercel**: `@types/react` 19.3.0 dropped the
+  global `JSX` namespace, so `FoodIllustration.tsx` switched from
+  `JSX.Element` to `ReactElement` (imported from `react`). A stale test
+  fixture in `apiMappers.test.ts` was also missing a required
+  `pickupTimeMinutes` field — only surfaced by running the real build
+  command (`npm run build`, i.e. `tsc -b`), not by a plain
+  `tsc --noEmit` check, since `tsc -b` also type-checks test files.
+- **`VITE_API_URL` must be a Vercel "Config" variable, not "Secret"** —
+  it's a `VITE_`-prefixed variable, meaning Vite inlines it into the
+  public frontend bundle at build time, so it isn't actually secret.
+  Vercel's Secret type is write-only and can't be read back into the
+  client bundle at build time, and once a variable is saved as Secret
+  it can't be converted to Config — it has to be deleted and
+  recreated. Set as Secret initially, this caused every API call to
+  resolve as `.../undefined/auth/login` in production (silently
+  broken login) even though the Render backend itself was working.
+
+## Live deployment (final)
+
+- Frontend: `https://cafeteria-order-app.vercel.app/`
+- Backend: `https://cafeteria-order-app-backend.onrender.com`
+- Full end-to-end pass completed 2026-09-16: login, menu load, cart,
+  pickup time selection, order confirmation (QR + order ID), and order
+  tracking all verified working against the live deployed stack.
 
 ## Demo deployment
 
