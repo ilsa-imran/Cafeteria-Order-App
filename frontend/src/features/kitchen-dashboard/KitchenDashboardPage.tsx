@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { PageShell } from "../../shared/components/PageShell";
 import { apiFetch } from "../../shared/lib/api";
 import { mapOrder, toBackendStatus } from "../../shared/lib/apiMappers";
-import { formatPickupTime, ORDER_STATUS_LABELS } from "../../shared/labels";
+import { formatPickupTime, ORDER_STATUS_LABELS, pickupUrgencyMinutes } from "../../shared/labels";
 import { useAuth } from "../../shared/state/AuthContext";
 import type { Order, OrderStatus } from "../../shared/types/order";
 
@@ -24,7 +24,13 @@ export function KitchenDashboardPage() {
 
   const loadOrders = () => {
     apiFetch<unknown[]>("/orders", { token })
-      .then((raw) => setOrders(raw.map((order) => mapOrder(order as never))))
+      .then((raw) =>
+        setOrders(
+          raw
+            .map((order) => mapOrder(order as never))
+            .sort((a, b) => pickupUrgencyMinutes(a) - pickupUrgencyMinutes(b)),
+        ),
+      )
       .catch(() => setOrders([]));
   };
 

@@ -23,3 +23,17 @@ export function formatPickupTime(order: Pick<Order, "pickupTime" | "pickupTimeMi
   }
   return PICKUP_TIME_LABELS[order.pickupTime];
 }
+
+const PICKUP_TIME_MINUTES: Record<PickupTime, number> = {
+  immediately: 0,
+  within_30_min: 30,
+  within_1_hour: 60,
+  custom: MAX_CUSTOM_PICKUP_MINUTES,
+};
+
+export function pickupUrgencyMinutes(order: Pick<Order, "pickupTime" | "pickupTimeMinutes">) {
+  if (order.pickupTime === "custom" && order.pickupTimeMinutes) {
+    return order.pickupTimeMinutes;
+  }
+  return PICKUP_TIME_MINUTES[order.pickupTime];
+}
