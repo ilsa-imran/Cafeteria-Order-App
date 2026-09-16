@@ -74,17 +74,17 @@ export async function createOrder(
     try {
       if (paymentMethod === "WALLET") {
         return await prisma.$transaction(async (tx) => {
-          const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
-          if (user.walletBalance < total) {
+          const debited = await tx.user.updateMany({
+            where: { id: userId, walletBalance: { gte: total } },
+            data: { walletBalance: { decrement: total } },
+          });
+          if (debited.count === 0) {
+            const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
             throw new AppError(
               400,
               `Insufficient wallet balance (Rs. ${user.walletBalance} available, Rs. ${total} needed). Add funds or choose Cash.`,
             );
           }
-          await tx.user.update({
-            where: { id: userId },
-            data: { walletBalance: { decrement: total } },
-          });
           return tx.order.create({ data: orderData(generateOrderNumber()), include });
         });
       }
@@ -155,23 +155,33 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
 const CANCELLABLE_STATUSES: OrderStatus[] = ["CONFIRMED", "PREPARING"];
 
 export async function cancelOrder(id: string) {
-  const order = await findOrderOrThrow(id);
-  if (!CANCELLABLE_STATUSES.includes(order.status)) {
-    throw new AppError(
-      409,
-      `Cannot cancel an order that is already ${order.status.toLowerCase()}`,
-    );
-  }
-  if (order.paymentMethod === "WALLET") {
-    await prisma.user.update({
-      where: { id: order.userId },
-      data: { walletBalance: { increment: order.total } },
+  const include = { items: { include: { menuItem: true } } } as const;
+
+  return prisma.$transaction(async (tx) => {
+    const cancelled = await tx.order.updateMany({
+      where: { id, status: { in: CANCELLABLE_STATUSES } },
+      data: { status: "CANCELLED" },
     });
-  }
-  return prisma.order.update({
-    where: { id },
-    data: { status: "CANCELLED" },
-    include: { items: { include: { menuItem: true } } },
+
+    if (cancelled.count === 0) {
+      const order = await tx.order.findUnique({ where: { id } });
+      if (!order) {
+        throw new AppError(404, "Order not found");
+      }
+      throw new AppError(
+        409,
+        `Cannot cancel an order that is already ${order.status.toLowerCase()}`,
+      );
+    }
+
+    const order = await tx.order.findUniqueOrThrow({ where: { id }, include });
+    if (order.paymentMethod === "WALLET") {
+      await tx.user.update({
+        where: { id: order.userId },
+        data: { walletBalance: { increment: order.total } },
+      });
+    }
+    return order;
   });
 }
 
