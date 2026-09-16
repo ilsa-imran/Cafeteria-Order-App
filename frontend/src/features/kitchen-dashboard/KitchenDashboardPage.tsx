@@ -1,8 +1,9 @@
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { PageShell } from "../../shared/components/PageShell";
 import { apiFetch } from "../../shared/lib/api";
 import { mapOrder, toBackendStatus } from "../../shared/lib/apiMappers";
-import { ORDER_STATUS_LABELS, PICKUP_TIME_LABELS } from "../../shared/labels";
+import { formatPickupTime, ORDER_STATUS_LABELS } from "../../shared/labels";
 import { useAuth } from "../../shared/state/AuthContext";
 import type { Order, OrderStatus } from "../../shared/types/order";
 
@@ -11,11 +12,15 @@ const NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {
   preparing: "ready",
   ready: "picked_up",
   picked_up: null,
+  cancelled: null,
 };
+
+const CANCELLABLE_STATUSES: OrderStatus[] = ["confirmed", "preparing"];
 
 export function KitchenDashboardPage() {
   const { token } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   const loadOrders = () => {
     apiFetch<unknown[]>("/orders", { token })
@@ -28,11 +33,23 @@ export function KitchenDashboardPage() {
   const advanceStatus = async (order: Order) => {
     const next = NEXT_STATUS[order.status];
     if (!next) return;
+    setPendingId(order.id);
     await apiFetch(`/orders/${order.id}/status`, {
       method: "PATCH",
       token,
       body: { status: toBackendStatus(next) },
     });
+    setPendingId(null);
+    loadOrders();
+  };
+
+  const cancelOrder = async (order: Order) => {
+    setPendingId(order.id);
+    await apiFetch(`/orders/${order.id}/cancel`, {
+      method: "POST",
+      token,
+    });
+    setPendingId(null);
     loadOrders();
   };
 
@@ -64,6 +81,8 @@ export function KitchenDashboardPage() {
           <tbody>
             {orders.map((order) => {
               const next = NEXT_STATUS[order.status];
+              const canCancel = CANCELLABLE_STATUSES.includes(order.status);
+              const isPending = pendingId === order.id;
               return (
                 <tr key={order.id} className="border-b border-[var(--color-dark-charcoal)]/10">
                   <td className="py-2 font-medium">{order.orderNumber}</td>
@@ -72,18 +91,44 @@ export function KitchenDashboardPage() {
                       .map((line) => `${line.quantity}x ${line.menuItem.name}`)
                       .join(", ")}
                   </td>
-                  <td className="py-2">{PICKUP_TIME_LABELS[order.pickupTime]}</td>
+                  <td className="py-2">{formatPickupTime(order)}</td>
                   <td className="py-2">{ORDER_STATUS_LABELS[order.status]}</td>
                   <td className="py-2">
-                    {next && (
-                      <button
-                        type="button"
-                        onClick={() => advanceStatus(order)}
-                        className="rounded-full border border-[var(--color-dark-charcoal)]/20 px-3 py-1 text-xs"
-                      >
-                        Mark {ORDER_STATUS_LABELS[next]}
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {next && (
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.04 }}
+                          whileTap={{ scale: 0.96 }}
+                          disabled={isPending}
+                          onClick={() => advanceStatus(order)}
+                          className="flex items-center gap-1.5 rounded-full bg-[var(--color-blush-pink)] px-4 py-2 text-xs font-bold text-[var(--color-warm-cream)] shadow-[0_4px_10px_rgba(34,34,34,0.15)] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path
+                              d="M5 12h14M13 6l6 6-6 6"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          Mark {ORDER_STATUS_LABELS[next]}
+                        </motion.button>
+                      )}
+                      {canCancel && (
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.04 }}
+                          whileTap={{ scale: 0.96 }}
+                          disabled={isPending}
+                          onClick={() => cancelOrder(order)}
+                          className="rounded-full border border-red-400 px-4 py-2 text-xs font-bold text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Cancel
+                        </motion.button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

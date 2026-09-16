@@ -61,7 +61,7 @@ export function PickupVerificationPage() {
           type="button"
           onClick={lookUp}
           disabled={orderIdInput.trim().length === 0 || isBusy}
-          className="rounded-full bg-[var(--color-blush-pink)] px-5 py-2 font-medium text-[var(--color-dark-charcoal)] disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-[var(--color-blush-pink)] px-5 py-2 font-medium text-[var(--color-warm-cream)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Verify
         </button>
@@ -103,7 +103,7 @@ export function PickupVerificationPage() {
               whileTap={{ scale: 0.97 }}
               disabled={isBusy}
               onClick={confirmPickup}
-              className="mt-4 w-full rounded-full bg-[var(--color-blush-pink)] py-3 font-medium text-[var(--color-dark-charcoal)] disabled:opacity-50"
+              className="mt-4 w-full rounded-full bg-[var(--color-blush-pink)] py-3 font-medium text-[var(--color-warm-cream)] disabled:opacity-50"
             >
               Confirm Pickup
             </motion.button>

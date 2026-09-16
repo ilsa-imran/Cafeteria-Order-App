@@ -1,6 +1,6 @@
-export type PickupTime = "immediately" | "within_30_min" | "within_1_hour";
+export type PickupTime = "immediately" | "within_30_min" | "within_1_hour" | "custom";
 
-export type OrderStatus = "confirmed" | "preparing" | "ready" | "picked_up";
+export type OrderStatus = "confirmed" | "preparing" | "ready" | "picked_up" | "cancelled";
 
 export type Role = "STUDENT" | "STAFF" | "ADMIN";
 
@@ -29,6 +29,7 @@ export interface Order {
   orderNumber: string;
   items: OrderLineItem[];
   pickupTime: PickupTime;
+  pickupTimeMinutes?: number;
   status: OrderStatus;
   total: number;
 }

@@ -4,12 +4,14 @@ const PICKUP_TIME_TO_BACKEND: Record<PickupTime, string> = {
   immediately: "IMMEDIATELY",
   within_30_min: "WITHIN_30_MIN",
   within_1_hour: "WITHIN_1_HOUR",
+  custom: "CUSTOM",
 };
 
 const PICKUP_TIME_FROM_BACKEND: Record<string, PickupTime> = {
   IMMEDIATELY: "immediately",
   WITHIN_30_MIN: "within_30_min",
   WITHIN_1_HOUR: "within_1_hour",
+  CUSTOM: "custom",
 };
 
 const STATUS_FROM_BACKEND: Record<string, OrderStatus> = {
@@ -17,6 +19,7 @@ const STATUS_FROM_BACKEND: Record<string, OrderStatus> = {
   PREPARING: "preparing",
   READY: "ready",
   PICKED_UP: "picked_up",
+  CANCELLED: "cancelled",
 };
 
 const STATUS_TO_BACKEND: Record<OrderStatus, string> = {
@@ -24,6 +27,7 @@ const STATUS_TO_BACKEND: Record<OrderStatus, string> = {
   preparing: "PREPARING",
   ready: "READY",
   picked_up: "PICKED_UP",
+  cancelled: "CANCELLED",
 };
 
 export function toBackendPickupTime(pickupTime: PickupTime): string {
@@ -62,6 +66,7 @@ interface BackendOrder {
   orderNumber: string;
   status: string;
   pickupTime: string;
+  pickupTimeMinutes: number | null;
   total: number;
   items: BackendOrderItem[];
 }
@@ -72,6 +77,7 @@ export function mapOrder(raw: BackendOrder): Order {
     orderNumber: raw.orderNumber,
     status: STATUS_FROM_BACKEND[raw.status] ?? "confirmed",
     pickupTime: PICKUP_TIME_FROM_BACKEND[raw.pickupTime] ?? "immediately",
+    pickupTimeMinutes: raw.pickupTimeMinutes ?? undefined,
     total: raw.total,
     items: raw.items.map((item) => ({
       menuItem: mapMenuItem(item.menuItem),

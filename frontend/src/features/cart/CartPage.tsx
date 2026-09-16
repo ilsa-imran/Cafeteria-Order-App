@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { FoodIllustration } from "../../shared/components/FoodIllustration";
 import { PageShell } from "../../shared/components/PageShell";
 import { useCart } from "../../shared/state/CartContext";
 
@@ -10,13 +11,13 @@ export function CartPage() {
   if (lines.length === 0) {
     return (
       <PageShell title="Your Cart">
-        <div className="rounded-2xl border border-[var(--color-blush-pink)] bg-white p-8 text-center">
+        <div className="rounded-[24px] border border-[var(--color-blush-pink)] bg-white p-8 text-center">
           <p className="font-body text-[var(--color-dark-charcoal)]/70">
             Your cart is empty.
           </p>
           <Link
             to="/menu"
-            className="font-heading mt-4 inline-block rounded-full bg-[var(--color-blush-pink)] px-5 py-2 text-sm font-medium"
+            className="font-heading mt-4 inline-block rounded-full bg-[var(--color-blush-pink)] px-5 py-2 text-sm font-medium text-[var(--color-warm-cream)]"
           >
             Browse the menu
           </Link>
@@ -37,64 +38,73 @@ export function CartPage() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center justify-between rounded-xl border border-[var(--color-blush-pink)] bg-white p-4"
+              className="flex items-center gap-3 rounded-[20px] bg-white p-3 shadow-[0_4px_12px_rgba(34,34,34,0.05)]"
             >
-              <div>
+              <FoodIllustration name={line.menuItem.name} size={48} className="shrink-0" />
+
+              <div className="flex-1">
                 <p className="font-heading font-semibold">{line.menuItem.name}</p>
                 <p className="font-body text-sm text-[var(--color-dark-charcoal)]/70">
                   Rs. {line.menuItem.price} each
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full border border-[var(--color-dark-charcoal)]/20 px-2 py-1">
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2 rounded-full bg-[var(--color-warm-cream)] px-2 py-1">
                   <button
                     type="button"
+                    aria-label="Decrease quantity"
                     onClick={() => setQuantity(line.menuItem.id, line.quantity - 1)}
-                    className="h-6 w-6 rounded-full text-sm"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-blush-pink)] text-sm font-bold text-[var(--color-warm-cream)]"
                   >
                     −
                   </button>
-                  <span className="w-4 text-center text-sm">{line.quantity}</span>
+                  <span className="w-4 text-center text-sm font-bold">{line.quantity}</span>
                   <button
                     type="button"
+                    aria-label="Increase quantity"
                     onClick={() => setQuantity(line.menuItem.id, line.quantity + 1)}
-                    className="h-6 w-6 rounded-full text-sm"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-blush-pink)] text-sm font-bold text-[var(--color-warm-cream)]"
                   >
                     +
                   </button>
                 </div>
 
-                <span className="w-16 text-right font-body text-sm">
-                  Rs. {line.menuItem.price * line.quantity}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => removeItem(line.menuItem.id)}
-                  className="text-sm text-red-500"
-                >
-                  Remove
-                </button>
+                <div className="flex items-center gap-3">
+                  <span className="font-body text-sm font-semibold">
+                    Rs. {line.menuItem.price * line.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeItem(line.menuItem.id)}
+                    className="text-xs text-red-500"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
 
-      <div className="mt-6 flex items-center justify-between border-t border-[var(--color-dark-charcoal)]/10 pt-4">
-        <span className="font-heading text-lg font-semibold">Total</span>
-        <span className="font-heading text-lg font-semibold">Rs. {total}</span>
-      </div>
+      <div className="mt-6 rounded-t-[28px] bg-white px-1 pb-1 pt-5 shadow-[0_-8px_20px_rgba(34,34,34,0.05)]">
+        <div className="flex items-center justify-between px-4">
+          <span className="text-sm text-[var(--color-dark-charcoal)]/60">Total</span>
+          <span className="font-heading text-xl font-bold">Rs. {total}</span>
+        </div>
 
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.98 }}
-        onClick={() => navigate("/pickup")}
-        className="mt-4 w-full rounded-full bg-[var(--color-blush-pink)] py-3 font-medium text-[var(--color-dark-charcoal)]"
-      >
-        Proceed to Pickup
-      </motion.button>
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate("/pickup")}
+          className="mx-4 mb-4 mt-4 block rounded-full bg-[var(--color-blush-pink)] py-3.5 font-heading font-bold text-[var(--color-warm-cream)] shadow-[0_10px_24px_rgba(244,182,194,0.4)]"
+          style={{ width: "calc(100% - 2rem)" }}
+        >
+          Proceed to Pickup
+        </motion.button>
+      </div>
     </PageShell>
   );
 }

@@ -46,6 +46,15 @@ PICKED_UP
 
 Additional states such as CANCELLED may be added only if needed and documented.
 
+**Implementation Decision: `CANCELLED` added.** Staff/admin can cancel an
+order (`POST /orders/:id/cancel`, `cancelOrder` in
+`backend/src/features/orders/service.ts`) only while it's still
+`CONFIRMED` or `PREPARING` — once it's `READY` the food is already made, and
+`PICKED_UP` is final, so both are rejected with 409. `CANCELLED` is a
+terminal state in `NEXT_STATUS` (no further transitions), same as
+`PICKED_UP`. Not an assignment requirement; added because staff had no way
+to handle a student cancelling or a mistaken order.
+
 ## Business rules
 
 Examples:
@@ -56,6 +65,15 @@ Examples:
 - An order must have a unique order identifier.
 - Pickup verification must identify the correct order.
 - Invalid order-status transitions should be rejected.
+
+**Implementation Decision: `CUSTOM` pickup time.** A fourth `PickupTime`
+enum value, `CUSTOM`, alongside the three FR-02 options. `Order` gained an
+optional `pickupTimeMinutes Int?` column, set only when `pickupTime` is
+`CUSTOM`. `createOrderSchema` (`backend/src/features/orders/schema.ts`)
+enforces the 3-hour cap (`MAX_CUSTOM_PICKUP_MINUTES = 180`) and requires
+`pickupTimeMinutes` whenever `pickupTime` is `CUSTOM`, via a `.refine()` —
+this is the actual enforcement boundary, not the frontend's `max` input
+attribute. See `requirements.md`'s FR-02 note for why this exists.
 
 ## Validation
 

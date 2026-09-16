@@ -12,6 +12,7 @@ export function MenuManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newDescription, setNewDescription] = useState("");
 
   const loadItems = () => {
     apiFetch<unknown[]>("/menu")
@@ -29,10 +30,15 @@ export function MenuManagementPage() {
       await apiFetch("/menu", {
         method: "POST",
         token,
-        body: { name: newName.trim(), price: Number(newPrice) },
+        body: {
+          name: newName.trim(),
+          price: Number(newPrice),
+          ...(newDescription.trim() ? { description: newDescription.trim() } : {}),
+        },
       });
       setNewName("");
       setNewPrice("");
+      setNewDescription("");
       loadItems();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not add the item.");
@@ -113,7 +119,7 @@ export function MenuManagementPage() {
                 onClick={() => toggleAvailability(item)}
                 className={`rounded-full px-3 py-1 text-sm ${
                   item.available
-                    ? "bg-[var(--color-soft-peach)]"
+                    ? "bg-[var(--color-soft-peach)] text-[var(--color-warm-cream)]"
                     : "bg-gray-200 text-[var(--color-dark-charcoal)]/60"
                 }`}
               >
@@ -160,11 +166,22 @@ export function MenuManagementPage() {
           />
         </label>
 
+        <label className="flex min-w-[200px] flex-1 flex-col gap-1 text-sm">
+          Description (optional)
+          <input
+            type="text"
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            placeholder="Short description shown on the item's page"
+            className="rounded-lg border border-[var(--color-dark-charcoal)]/20 px-3 py-2"
+          />
+        </label>
+
         <button
           type="button"
           disabled={!canAdd}
           onClick={addItem}
-          className="rounded-full bg-[var(--color-blush-pink)] px-5 py-2 font-medium text-[var(--color-dark-charcoal)] disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-[var(--color-blush-pink)] px-5 py-2 font-medium text-[var(--color-warm-cream)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Add item
         </button>

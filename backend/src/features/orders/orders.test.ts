@@ -188,4 +188,101 @@ describe("orders API", () => {
 
     expect(res.status).toBe(409);
   });
+
+  it("accepts a custom pickup time within the 3-hour cap", async () => {
+    const studentToken = signAuthToken({ sub: studentId, role: "STUDENT" });
+    const res = await request(app)
+      .post("/orders")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({
+        items: [{ menuItemId, quantity: 1 }],
+        pickupTime: "CUSTOM",
+        pickupTimeMinutes: 90,
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.pickupTime).toBe("CUSTOM");
+    expect(res.body.pickupTimeMinutes).toBe(90);
+  });
+
+  it("rejects a custom pickup time beyond the 3-hour cap", async () => {
+    const studentToken = signAuthToken({ sub: studentId, role: "STUDENT" });
+    const res = await request(app)
+      .post("/orders")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({
+        items: [{ menuItemId, quantity: 1 }],
+        pickupTime: "CUSTOM",
+        pickupTimeMinutes: 181,
+      });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects a custom pickup time with no minutes given", async () => {
+    const studentToken = signAuthToken({ sub: studentId, role: "STUDENT" });
+    const res = await request(app)
+      .post("/orders")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({ items: [{ menuItemId, quantity: 1 }], pickupTime: "CUSTOM" });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("lets staff cancel an order that hasn't been picked up yet", async () => {
+    const studentToken = signAuthToken({ sub: studentId, role: "STUDENT" });
+    const created = await request(app)
+      .post("/orders")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({ items: [{ menuItemId, quantity: 1 }], pickupTime: "IMMEDIATELY" });
+
+    const staffToken = signAuthToken({ sub: staffId, role: "STAFF" });
+    const res = await request(app)
+      .post(`/orders/${created.body.id}/cancel`)
+      .set("Authorization", `Bearer ${staffToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe("CANCELLED");
+  });
+
+  it("rejects cancelling an order that has already been picked up", async () => {
+    const studentToken = signAuthToken({ sub: studentId, role: "STUDENT" });
+    const created = await request(app)
+      .post("/orders")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({ items: [{ menuItemId, quantity: 1 }], pickupTime: "IMMEDIATELY" });
+
+    const staffToken = signAuthToken({ sub: staffId, role: "STAFF" });
+    await request(app)
+      .patch(`/orders/${created.body.id}/status`)
+      .set("Authorization", `Bearer ${staffToken}`)
+      .send({ status: "PREPARING" });
+    await request(app)
+      .patch(`/orders/${created.body.id}/status`)
+      .set("Authorization", `Bearer ${staffToken}`)
+      .send({ status: "READY" });
+    await request(app)
+      .post(`/orders/${created.body.id}/pickup`)
+      .set("Authorization", `Bearer ${staffToken}`);
+
+    const res = await request(app)
+      .post(`/orders/${created.body.id}/cancel`)
+      .set("Authorization", `Bearer ${staffToken}`);
+
+    expect(res.status).toBe(409);
+  });
+
+  it("rejects a student trying to cancel an order directly", async () => {
+    const studentToken = signAuthToken({ sub: studentId, role: "STUDENT" });
+    const created = await request(app)
+      .post("/orders")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({ items: [{ menuItemId, quantity: 1 }], pickupTime: "IMMEDIATELY" });
+
+    const res = await request(app)
+      .post(`/orders/${created.body.id}/cancel`)
+      .set("Authorization", `Bearer ${studentToken}`);
+
+    expect(res.status).toBe(403);
+  });
 });

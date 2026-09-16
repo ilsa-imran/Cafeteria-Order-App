@@ -10,6 +10,7 @@ const NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {
   PREPARING: "READY",
   READY: "PICKED_UP",
   PICKED_UP: null,
+  CANCELLED: null,
 };
 
 function generateOrderNumber() {
@@ -30,6 +31,7 @@ export async function createOrder(
   userId: string,
   items: { menuItemId: string; quantity: number }[],
   pickupTime: PickupTime,
+  pickupTimeMinutes?: number,
 ) {
   const menuItems = await prisma.menuItem.findMany({
     where: { id: { in: items.map((item) => item.menuItemId) } },
@@ -63,6 +65,7 @@ export async function createOrder(
           orderNumber: generateOrderNumber(),
           userId,
           pickupTime,
+          pickupTimeMinutes: pickupTime === "CUSTOM" ? pickupTimeMinutes : undefined,
           total,
           items: { create: orderItems },
         },
@@ -126,6 +129,23 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
   return prisma.order.update({
     where: { id },
     data: { status },
+    include: { items: { include: { menuItem: true } } },
+  });
+}
+
+const CANCELLABLE_STATUSES: OrderStatus[] = ["CONFIRMED", "PREPARING"];
+
+export async function cancelOrder(id: string) {
+  const order = await findOrderOrThrow(id);
+  if (!CANCELLABLE_STATUSES.includes(order.status)) {
+    throw new AppError(
+      409,
+      `Cannot cancel an order that is already ${order.status.toLowerCase()}`,
+    );
+  }
+  return prisma.order.update({
+    where: { id },
+    data: { status: "CANCELLED" },
     include: { items: { include: { menuItem: true } } },
   });
 }

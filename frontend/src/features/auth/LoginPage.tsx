@@ -2,7 +2,9 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "../../shared/components/PageShell";
+import { PasswordInput } from "../../shared/components/PasswordInput";
 import { ApiError } from "../../shared/lib/api";
+import { PASSWORD_HINT, validatePassword } from "../../shared/lib/passwordStrength";
 import { useAuth } from "../../shared/state/AuthContext";
 
 type Mode = "signin" | "register";
@@ -21,6 +23,15 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (mode === "register") {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        setError(passwordError);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -50,7 +61,9 @@ export function LoginPage() {
               setMode(m);
               setError(null);
             }}
-            className="relative z-10 flex-1 rounded-full py-2 text-sm font-medium"
+            className={`relative z-10 flex-1 rounded-full py-2 text-sm font-medium ${
+              mode === m ? "text-[var(--color-warm-cream)]" : ""
+            }`}
           >
             {mode === m && (
               <motion.div
@@ -83,15 +96,16 @@ export function LoginPage() {
           placeholder="Email"
           className="rounded-lg border border-[var(--color-dark-charcoal)]/20 p-3"
         />
-        <input
-          type="password"
+        <PasswordInput
           required
           minLength={mode === "register" ? 8 : undefined}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
           placeholder="Password"
-          className="rounded-lg border border-[var(--color-dark-charcoal)]/20 p-3"
         />
+        {mode === "register" && !error && (
+          <p className="text-xs text-[var(--color-dark-charcoal)]/60">{PASSWORD_HINT}</p>
+        )}
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -99,7 +113,7 @@ export function LoginPage() {
           type="submit"
           disabled={isSubmitting}
           whileTap={{ scale: 0.97 }}
-          className="mt-2 rounded-full bg-[var(--color-blush-pink)] py-3 font-medium disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-2 rounded-full bg-[var(--color-blush-pink)] py-3 font-medium text-[var(--color-warm-cream)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isSubmitting
             ? "Please wait..."

@@ -62,7 +62,7 @@ export function App() {
               className={({ isActive }) =>
                 `font-heading whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${
                   isActive
-                    ? "bg-[var(--color-blush-pink)] text-[var(--color-dark-charcoal)]"
+                    ? "bg-[var(--color-blush-pink)] text-[var(--color-warm-cream)]"
                     : "text-[var(--color-dark-charcoal)]/70"
                 }`
               }

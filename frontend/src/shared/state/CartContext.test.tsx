@@ -23,7 +23,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 beforeEach(() => {
-  localStorage.clear();
+  sessionStorage.clear();
   vi.mocked(apiFetch).mockReset();
 });
 
@@ -65,6 +65,44 @@ describe("CartContext", () => {
 
     act(() => result.current.addItem(BIRYANI));
     await expect(result.current.confirmOrder()).rejects.toThrow();
+  });
+
+  it("refuses to confirm a custom pickup time with no minutes chosen", async () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+
+    act(() => result.current.addItem(BIRYANI));
+    act(() => result.current.setPickupTime("custom"));
+
+    await expect(result.current.confirmOrder()).rejects.toThrow();
+  });
+
+  it("sends the chosen minutes when confirming a custom pickup time", async () => {
+    vi.mocked(apiFetch).mockResolvedValue({
+      id: "order-2",
+      orderNumber: "ORD-654321",
+      status: "CONFIRMED",
+      pickupTime: "CUSTOM",
+      pickupTimeMinutes: 90,
+      total: 250,
+      items: [{ quantity: 1, menuItem: { ...BIRYANI, description: null } }],
+    });
+
+    const { result } = renderHook(() => useCart(), { wrapper });
+
+    act(() => result.current.addItem(BIRYANI));
+    act(() => result.current.setPickupTime("custom"));
+    act(() => result.current.setCustomPickupMinutes(90));
+
+    await act(async () => {
+      await result.current.confirmOrder();
+    });
+
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/orders",
+      expect.objectContaining({
+        body: expect.objectContaining({ pickupTime: "CUSTOM", pickupTimeMinutes: 90 }),
+      }),
+    );
   });
 
   it("clears the cart after a successful order confirmation", async () => {

@@ -16,7 +16,7 @@ export function ReadyNotificationBanner() {
           transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
           className="fixed left-0 right-0 top-0 z-50 flex items-center justify-between gap-4 bg-[var(--color-blush-pink)] px-4 py-3 shadow-md"
         >
-          <p className="font-heading text-sm font-semibold text-[var(--color-dark-charcoal)]">
+          <p className="font-heading text-sm font-semibold text-[var(--color-warm-cream)]">
             Your order {readyOrder.orderNumber} is ready for pickup!
           </p>
           <div className="flex shrink-0 items-center gap-2">
@@ -34,7 +34,7 @@ export function ReadyNotificationBanner() {
               type="button"
               onClick={dismiss}
               aria-label="Dismiss"
-              className="rounded-full px-2 py-1 text-sm text-[var(--color-dark-charcoal)]/70"
+              className="rounded-full px-2 py-1 text-sm text-[var(--color-warm-cream)]/80"
             >
               ✕
             </button>

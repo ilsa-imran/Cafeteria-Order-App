@@ -46,6 +46,12 @@ async function main() {
     { name: "Beef Burger", price: 300, available: true },
     { name: "Club Sandwich", price: 220, available: false },
     { name: "Fresh Juice", price: 120, available: true },
+    { name: "Matcha Chiller", price: 180, available: true },
+    { name: "Cherry Tart", price: 200, available: true },
+    { name: "Blueberry Shake", price: 220, available: true },
+    { name: "Loaded Tater Tots", price: 150, available: true },
+    { name: "Chicken Shawarma Bowl", price: 320, available: true },
+    { name: "Creamy Cajun Alfredo", price: 280, available: true },
   ];
 
   for (const item of menuItems) {

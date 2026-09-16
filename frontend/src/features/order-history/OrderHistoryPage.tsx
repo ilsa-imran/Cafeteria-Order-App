@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { PageShell } from "../../shared/components/PageShell";
 import { apiFetch } from "../../shared/lib/api";
 import { mapOrder } from "../../shared/lib/apiMappers";
-import { ORDER_STATUS_LABELS, PICKUP_TIME_LABELS } from "../../shared/labels";
+import { formatPickupTime, ORDER_STATUS_LABELS } from "../../shared/labels";
 import { useAuth } from "../../shared/state/AuthContext";
 import type { Order } from "../../shared/types/order";
 
@@ -44,7 +44,7 @@ export function OrderHistoryPage() {
           </p>
           <Link
             to="/menu"
-            className="font-heading mt-4 inline-block rounded-full bg-[var(--color-blush-pink)] px-5 py-2 text-sm font-medium"
+            className="font-heading mt-4 inline-block rounded-full bg-[var(--color-blush-pink)] px-5 py-2 text-sm font-medium text-[var(--color-warm-cream)]"
           >
             Browse the menu
           </Link>
@@ -75,7 +75,7 @@ export function OrderHistoryPage() {
                     .join(", ")}
                 </p>
                 <p className="font-body text-xs text-[var(--color-dark-charcoal)]/50">
-                  {PICKUP_TIME_LABELS[order.pickupTime]}
+                  {formatPickupTime(order)}
                 </p>
               </div>
               <div className="text-right">

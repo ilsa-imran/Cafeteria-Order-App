@@ -3,6 +3,7 @@ import type { OrderStatus } from "@prisma/client";
 import { AppError } from "../../shared/lib/AppError.js";
 import { requireAuth, requireRole } from "../../shared/middleware/auth.js";
 import {
+  cancelOrder,
   createOrder,
   getOrder,
   getOrderQrCode,
@@ -15,8 +16,8 @@ export const ordersRouter = Router();
 
 ordersRouter.post("/", requireAuth, requireRole("STUDENT"), async (req, res, next) => {
   try {
-    const { items, pickupTime } = createOrderSchema.parse(req.body);
-    const order = await createOrder(req.user!.id, items, pickupTime);
+    const { items, pickupTime, pickupTimeMinutes } = createOrderSchema.parse(req.body);
+    const order = await createOrder(req.user!.id, items, pickupTime, pickupTimeMinutes);
     res.status(201).json(order);
   } catch (err) {
     next(err);
@@ -70,6 +71,20 @@ ordersRouter.patch(
     try {
       const { status } = updateOrderStatusSchema.parse(req.body);
       const order = await updateOrderStatus(req.params.id as string, status);
+      res.status(200).json(order);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+ordersRouter.post(
+  "/:id/cancel",
+  requireAuth,
+  requireRole("STAFF", "ADMIN"),
+  async (req, res, next) => {
+    try {
+      const order = await cancelOrder(req.params.id as string);
       res.status(200).json(order);
     } catch (err) {
       next(err);

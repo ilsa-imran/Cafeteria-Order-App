@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { PageShell } from "../../shared/components/PageShell";
+import { PasswordInput } from "../../shared/components/PasswordInput";
 import { apiFetch, ApiError } from "../../shared/lib/api";
+import { PASSWORD_HINT, validatePassword } from "../../shared/lib/passwordStrength";
 import { useAuth } from "../../shared/state/AuthContext";
 import type { Role } from "../../shared/types/order";
 
@@ -26,6 +28,13 @@ export function CreateStaffAccountPage() {
 
     setError(null);
     setSuccess(null);
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -63,13 +72,14 @@ export function CreateStaffAccountPage() {
           placeholder="Email"
           className="rounded-lg border border-[var(--color-dark-charcoal)]/20 p-3"
         />
-        <input
-          type="password"
+        <PasswordInput
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
           placeholder="Temporary password (min 8 characters)"
-          className="rounded-lg border border-[var(--color-dark-charcoal)]/20 p-3"
         />
+        {!error && (
+          <p className="text-xs text-[var(--color-dark-charcoal)]/60">{PASSWORD_HINT}</p>
+        )}
 
         <div className="flex rounded-full border border-[var(--color-blush-pink)] bg-white p-1">
           {(["STAFF", "ADMIN"] as StaffRole[]).map((r) => (
@@ -78,7 +88,7 @@ export function CreateStaffAccountPage() {
               type="button"
               onClick={() => setRole(r)}
               className={`relative flex-1 rounded-full py-2 text-sm font-medium ${
-                role === r ? "bg-[var(--color-blush-pink)]" : ""
+                role === r ? "bg-[var(--color-blush-pink)] text-[var(--color-warm-cream)]" : ""
               }`}
             >
               {r === "STAFF" ? "Staff" : "Admin"}
@@ -93,7 +103,7 @@ export function CreateStaffAccountPage() {
           type="submit"
           disabled={!canSubmit || isSubmitting}
           whileTap={{ scale: 0.97 }}
-          className="mt-2 rounded-full bg-[var(--color-blush-pink)] py-3 font-medium disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-2 rounded-full bg-[var(--color-blush-pink)] py-3 font-medium text-[var(--color-warm-cream)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isSubmitting ? "Creating..." : "Create Account"}
         </motion.button>

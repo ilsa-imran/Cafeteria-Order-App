@@ -10,11 +10,13 @@ interface CartContextValue {
   total: number;
   itemCount: number;
   pickupTime: PickupTime | null;
+  customPickupMinutes: number | null;
   lastOrder: Order | null;
   addItem: (menuItem: MenuItem) => void;
   setQuantity: (menuItemId: string, quantity: number) => void;
   removeItem: (menuItemId: string) => void;
   setPickupTime: (pickupTime: PickupTime) => void;
+  setCustomPickupMinutes: (minutes: number | null) => void;
   confirmOrder: () => Promise<Order>;
 }
 
@@ -23,8 +25,16 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
   const [lines, setLines] = useState<OrderLineItem[]>([]);
-  const [pickupTime, setPickupTime] = useState<PickupTime | null>(null);
+  const [pickupTime, setPickupTimeState] = useState<PickupTime | null>(null);
+  const [customPickupMinutes, setCustomPickupMinutes] = useState<number | null>(null);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
+
+  const setPickupTime = (next: PickupTime) => {
+    setPickupTimeState(next);
+    if (next !== "custom") {
+      setCustomPickupMinutes(null);
+    }
+  };
 
   const addItem = (menuItem: MenuItem) => {
     setLines((prev) => {
@@ -69,6 +79,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (lines.length === 0 || !pickupTime) {
       throw new Error("Cannot confirm an order without items and a pickup time");
     }
+    if (pickupTime === "custom" && !customPickupMinutes) {
+      throw new Error("Cannot confirm a custom pickup time without a number of minutes");
+    }
 
     const raw = await apiFetch<unknown>("/orders", {
       method: "POST",
@@ -79,13 +92,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
           quantity: line.quantity,
         })),
         pickupTime: toBackendPickupTime(pickupTime),
+        ...(pickupTime === "custom" ? { pickupTimeMinutes: customPickupMinutes } : {}),
       },
     });
 
     const order = mapOrder(raw as never);
     setLastOrder(order);
     setLines([]);
-    setPickupTime(null);
+    setPickupTimeState(null);
+    setCustomPickupMinutes(null);
 
     return order;
   };
@@ -95,11 +110,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     total,
     itemCount,
     pickupTime,
+    customPickupMinutes,
     lastOrder,
     addItem,
     setQuantity,
     removeItem,
     setPickupTime,
+    setCustomPickupMinutes,
     confirmOrder,
   };
 

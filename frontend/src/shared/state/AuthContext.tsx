@@ -18,7 +18,7 @@ const STORAGE_KEY = "cafeteria-auth";
 
 function loadStoredAuth(): { user: User; token: string } | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setUser(result.user);
     setToken(result.token);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(result));
     return result.user;
   };
 
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
   };
 
   const value: AuthContextValue = { user, token, isLoading, login, register, logout };

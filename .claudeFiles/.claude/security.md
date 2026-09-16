@@ -54,6 +54,27 @@ Administrators or managers may manage:
 - prices,
 - availability.
 
+## Password policy
+
+**Implementation Decision** — not specified by the assignment, added at the
+student's request for stronger account security. Passwords (registration
+and admin-created staff accounts) must be at least 8 characters and include
+at least one letter and one number; any other characters, including
+special characters (`@#$%^&*` etc.), are allowed but not required. This
+accepts both a fully mixed password like `something@#$%(*q3r!` and a
+simpler letter+number combination like `AfeefL22332`.
+
+Enforced at both layers, per the "validate input at system boundaries" and
+"do not rely on the frontend for authorization" rules:
+- **Backend** (source of truth): a shared `strongPassword` Zod schema in
+  `backend/src/features/auth/schema.ts`, used by both `registerSchema` and
+  `createStaffSchema`.
+- **Frontend** (UX only, not a security boundary): `validatePassword` in
+  `frontend/src/shared/lib/passwordStrength.ts`, used by `LoginPage.tsx`
+  (registration) and `CreateStaffAccountPage.tsx` (admin-created staff),
+  each showing the specific unmet rule instead of a generic backend
+  message plus a static hint below the password field.
+
 ## Security practices
 
 - Validate all input.

@@ -18,12 +18,14 @@ enum OrderStatus {
   PREPARING
   READY
   PICKED_UP
+  CANCELLED
 }
 
 enum PickupTime {
   IMMEDIATELY
   WITHIN_30_MIN
   WITHIN_1_HOUR
+  CUSTOM
 }
 
 model User {
@@ -54,9 +56,10 @@ model Order {
   id          String      @id @default(cuid())
   orderNumber String      @unique
   userId      String
-  status      OrderStatus @default(CONFIRMED)
-  pickupTime  PickupTime
-  total       Float
+  status            OrderStatus @default(CONFIRMED)
+  pickupTime        PickupTime
+  pickupTimeMinutes Int?
+  total             Float
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
