@@ -36,6 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       setUser(stored.user);
       setToken(stored.token);
+      apiFetch<User>("/auth/me", { token: stored.token })
+        .then((freshUser) => {
+          setUser(freshUser);
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ token: stored.token, user: freshUser }));
+        })
+        .catch(() => {});
     }
     setIsLoading(false);
   }, []);
