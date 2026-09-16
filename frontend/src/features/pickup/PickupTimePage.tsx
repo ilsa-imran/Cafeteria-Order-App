@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "../../shared/components/PageShell";
 import { MAX_CUSTOM_PICKUP_MINUTES, PAYMENT_METHOD_LABELS } from "../../shared/labels";
+import { ApiError } from "../../shared/lib/api";
+import { useAuth } from "../../shared/state/AuthContext";
 import { useCart } from "../../shared/state/CartContext";
 import type { PaymentMethod, PickupTime } from "../../shared/types/order";
 
@@ -25,8 +27,11 @@ export function PickupTimePage() {
     setPaymentMethod,
     confirmOrder,
     lines,
+    total,
   } = useCart();
+  const { user } = useAuth();
   const [isConfirming, setIsConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const customMinutesValid =
@@ -35,14 +40,28 @@ export function PickupTimePage() {
       customPickupMinutes > 0 &&
       customPickupMinutes <= MAX_CUSTOM_PICKUP_MINUTES);
 
+  const walletBalance = user?.walletBalance ?? 0;
+  const insufficientWallet = paymentMethod === "wallet" && walletBalance < total;
+
   const confirmDisabled =
-    !pickupTime || !customMinutesValid || !paymentMethod || lines.length === 0 || isConfirming;
+    !pickupTime ||
+    !customMinutesValid ||
+    !paymentMethod ||
+    insufficientWallet ||
+    lines.length === 0 ||
+    isConfirming;
 
   const handleConfirm = async () => {
+    setError(null);
     setIsConfirming(true);
-    await confirmOrder();
-    setIsConfirming(false);
-    navigate("/confirmation");
+    try {
+      await confirmOrder();
+      navigate("/confirmation");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not confirm the order.");
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   return (
@@ -119,9 +138,14 @@ export function PickupTimePage() {
         )}
       </div>
 
-      <p className="font-heading mt-6 mb-3 text-sm font-bold text-[var(--color-dark-charcoal)]/80">
-        Payment Method
-      </p>
+      <div className="mb-3 mt-6 flex items-center justify-between">
+        <p className="font-heading text-sm font-bold text-[var(--color-dark-charcoal)]/80">
+          Payment Method
+        </p>
+        <p className="text-xs text-[var(--color-dark-charcoal)]/60">
+          Wallet balance: <span className="font-medium">Rs. {walletBalance}</span>
+        </p>
+      </div>
       <div className="flex gap-3">
         {PAYMENT_OPTIONS.map((method) => {
           const isActive = paymentMethod === method;
@@ -147,6 +171,15 @@ export function PickupTimePage() {
           );
         })}
       </div>
+
+      {insufficientWallet && (
+        <p className="mt-2 text-xs text-red-500">
+          Not enough wallet balance for this order (Rs. {total} needed). Ask a cafeteria staff
+          member to top up your wallet, or choose Cash.
+        </p>
+      )}
+
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
       <motion.button
         type="button"

@@ -25,7 +25,7 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
+  const { token, refreshUser } = useAuth();
   const [lines, setLines] = useState<OrderLineItem[]>([]);
   const [pickupTime, setPickupTimeState] = useState<PickupTime | null>(null);
   const [customPickupMinutes, setCustomPickupMinutes] = useState<number | null>(null);
@@ -109,6 +109,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setPickupTimeState(null);
     setCustomPickupMinutes(null);
     setPaymentMethod(null);
+
+    if (order.paymentMethod === "wallet") {
+      await refreshUser();
+    }
 
     return order;
   };

@@ -10,6 +10,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<User>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -60,7 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem(STORAGE_KEY);
   };
 
-  const value: AuthContextValue = { user, token, isLoading, login, register, logout };
+  const refreshUser = async () => {
+    if (!token) return;
+    const freshUser = await apiFetch<User>("/auth/me", { token });
+    setUser(freshUser);
+    const stored = loadStoredAuth();
+    if (stored) {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...stored, user: freshUser }));
+    }
+  };
+
+  const value: AuthContextValue = { user, token, isLoading, login, register, logout, refreshUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

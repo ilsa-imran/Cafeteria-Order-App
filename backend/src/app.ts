@@ -4,6 +4,7 @@ import { authRouter } from "./features/auth/routes.js";
 import { menuRouter } from "./features/menu/routes.js";
 import { ordersRouter } from "./features/orders/routes.js";
 import { pickupVerificationRouter } from "./features/pickup-verification/routes.js";
+import { walletRouter } from "./features/wallet/routes.js";
 import { errorHandler } from "./shared/middleware/errorHandler.js";
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   app.use("/menu", menuRouter);
   app.use("/orders", ordersRouter);
   app.use("/orders", pickupVerificationRouter);
+  app.use("/wallet", walletRouter);
 
   app.use(errorHandler);
 

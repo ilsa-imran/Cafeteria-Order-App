@@ -12,6 +12,7 @@ import { OrderTrackingPage } from "../features/order-tracking/OrderTrackingPage"
 import { PickupTimePage } from "../features/pickup/PickupTimePage";
 import { PickupVerificationPage } from "../features/pickup-verification/PickupVerificationPage";
 import { CreateStaffAccountPage } from "../features/staff-accounts/CreateStaffAccountPage";
+import { WalletTopUpPage } from "../features/wallet/WalletTopUpPage";
 import { ProtectedRoute } from "../shared/components/ProtectedRoute";
 import { ReadyNotificationBanner } from "../shared/components/ReadyNotificationBanner";
 import { useAuth } from "../shared/state/AuthContext";
@@ -28,6 +29,7 @@ const STAFF_NAV_LINKS = [
   { to: "/kitchen", label: "Kitchen" },
   { to: "/menu-management", label: "Menu Mgmt" },
   { to: "/pickup-verification", label: "Verify Pickup" },
+  { to: "/wallet-topup", label: "Wallet Top-up" },
 ];
 
 const ADMIN_ONLY_NAV_LINKS = [{ to: "/staff-accounts/new", label: "Create Staff Account" }];
@@ -74,6 +76,11 @@ export function App() {
 
         {user && (
           <div className="flex items-center gap-3 whitespace-nowrap">
+            {user.role === "STUDENT" && (
+              <span className="rounded-full bg-[var(--color-warm-cream)] px-3 py-1 text-sm font-medium text-[var(--color-dark-charcoal)]">
+                Wallet: Rs. {user.walletBalance}
+              </span>
+            )}
             <span className="text-sm text-[var(--color-dark-charcoal)]/70">
               {user.name} ({user.role})
             </span>
@@ -186,6 +193,14 @@ export function App() {
             element={
               <ProtectedRoute roles={["ADMIN"]}>
                 <CreateStaffAccountPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wallet-topup"
+            element={
+              <ProtectedRoute roles={["STAFF", "ADMIN"]}>
+                <WalletTopUpPage />
               </ProtectedRoute>
             }
           />

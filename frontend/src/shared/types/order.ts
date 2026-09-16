@@ -11,6 +11,7 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  walletBalance: number;
 }
 
 export interface MenuItem {

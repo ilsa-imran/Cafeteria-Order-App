@@ -15,7 +15,13 @@ async function createUser(name: string, email: string, password: string, role: R
     data: { name, email, passwordHash, role },
   });
 
-  return { id: user.id, name: user.name, email: user.email, role: user.role };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    walletBalance: user.walletBalance,
+  };
 }
 
 export function registerStudent(name: string, email: string, password: string) {
@@ -45,7 +51,13 @@ export async function login(email: string, password: string) {
   const token = signAuthToken({ sub: user.id, role: user.role });
   return {
     token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      walletBalance: user.walletBalance,
+    },
   };
 }
 
@@ -54,5 +66,11 @@ export async function getProfile(userId: string) {
   if (!user) {
     throw new AppError(401, "User no longer exists");
   }
-  return { id: user.id, name: user.name, email: user.email, role: user.role };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    walletBalance: user.walletBalance,
+  };
 }

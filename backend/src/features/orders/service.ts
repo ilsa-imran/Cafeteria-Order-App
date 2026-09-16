@@ -58,21 +58,38 @@ export async function createOrder(
     0,
   );
 
+  const orderData = (orderNumber: string) => ({
+    orderNumber,
+    userId,
+    pickupTime,
+    pickupTimeMinutes: pickupTime === "CUSTOM" ? pickupTimeMinutes : undefined,
+    paymentMethod,
+    total,
+    items: { create: orderItems },
+  });
+  const include = { items: { include: { menuItem: true } } } as const;
+
   const maxAttempts = 5;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      return await prisma.order.create({
-        data: {
-          orderNumber: generateOrderNumber(),
-          userId,
-          pickupTime,
-          pickupTimeMinutes: pickupTime === "CUSTOM" ? pickupTimeMinutes : undefined,
-          paymentMethod,
-          total,
-          items: { create: orderItems },
-        },
-        include: { items: { include: { menuItem: true } } },
-      });
+      if (paymentMethod === "WALLET") {
+        return await prisma.$transaction(async (tx) => {
+          const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+          if (user.walletBalance < total) {
+            throw new AppError(
+              400,
+              `Insufficient wallet balance (Rs. ${user.walletBalance} available, Rs. ${total} needed). Add funds or choose Cash.`,
+            );
+          }
+          await tx.user.update({
+            where: { id: userId },
+            data: { walletBalance: { decrement: total } },
+          });
+          return tx.order.create({ data: orderData(generateOrderNumber()), include });
+        });
+      }
+
+      return await prisma.order.create({ data: orderData(generateOrderNumber()), include });
     } catch (err) {
       if (isUniqueOrderNumberConflict(err) && attempt < maxAttempts) {
         continue;
@@ -144,6 +161,12 @@ export async function cancelOrder(id: string) {
       409,
       `Cannot cancel an order that is already ${order.status.toLowerCase()}`,
     );
+  }
+  if (order.paymentMethod === "WALLET") {
+    await prisma.user.update({
+      where: { id: order.userId },
+      data: { walletBalance: { increment: order.total } },
+    });
   }
   return prisma.order.update({
     where: { id },
